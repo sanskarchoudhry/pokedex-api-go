@@ -23,131 +23,51 @@ func NewClient(baseURL string, timeout time.Duration) *Client {
 }
 
 func (c *Client) ListGenerations() (ResShallowGenerations, error) {
-	fullURL := c.baseURL + "/generation"
-
-	req, err := http.NewRequest("GET", fullURL, nil)
-	if err != nil {
-		return ResShallowGenerations{}, err
-	}
-
-	res, err := c.client.Do(req)
-	if err != nil {
-		return ResShallowGenerations{}, err
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode > 299 {
-		return ResShallowGenerations{}, fmt.Errorf("bad status code: %d", res.StatusCode)
-	}
-
-	data, err := io.ReadAll(res.Body)
-	if err != nil {
-		return ResShallowGenerations{}, err
-	}
-
-	generations := ResShallowGenerations{}
-	err = json.Unmarshal(data, &generations)
-	if err != nil {
-		return ResShallowGenerations{}, err
-	}
-
-	return generations, nil
+	var resp ResShallowGenerations
+	err := c.fetchJSON("/generation", &resp)
+	return resp, err
 }
 
 func (c *Client) GetGeneration(nameOrID string) (GenerationDetails, error) {
-	url := fmt.Sprintf("%s/generation/%s", c.baseURL, nameOrID)
-
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return GenerationDetails{}, err
-	}
-
-	res, err := c.client.Do(req)
-	if err != nil {
-		return GenerationDetails{}, err
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode > 299 {
-		return GenerationDetails{}, fmt.Errorf("bad status code: %d", res.StatusCode)
-	}
-
-	data, err := io.ReadAll(res.Body)
-	if err != nil {
-		return GenerationDetails{}, err
-	}
-
-	details := GenerationDetails{}
-	err = json.Unmarshal(data, &details)
-	if err != nil {
-		return GenerationDetails{}, err
-	}
-
-	return details, nil
+	var resp GenerationDetails
+	err := c.fetchJSON("/generation/"+nameOrID, &resp)
+	return resp, err
 }
 
 func (c *Client) ListTypes() (ResShallowTypes, error) {
-	fullUrl := c.baseURL + "/type"
-	req, err := http.NewRequest("GET", fullUrl, nil)
-	if err != nil {
-		return ResShallowTypes{}, err
-	}
-
-	res, err := c.client.Do(req)
-	if err != nil {
-		return ResShallowTypes{}, err
-	}
-
-	defer res.Body.Close()
-
-	if res.StatusCode > 299 {
-		return ResShallowTypes{}, fmt.Errorf("bad status code: %d", res.StatusCode)
-	}
-
-	data, err := io.ReadAll(res.Body)
-	if err != nil {
-		return ResShallowTypes{}, err
-	}
-
-	types := ResShallowTypes{}
-	err = json.Unmarshal(data, &types)
-	if err != nil {
-		return ResShallowTypes{}, err
-	}
-
-	return types, nil
+	var resp ResShallowTypes
+	err := c.fetchJSON("/type", &resp)
+	return resp, err
 }
 
 func (c *Client) GetType(name string) (TypeDetails, error) {
-	fullUrl := c.baseURL + "/type/" + name
+	var resp TypeDetails
+	err := c.fetchJSON("/type/"+name, &resp)
+	return resp, err
+}
 
-	req, err := http.NewRequest("GET", fullUrl, nil)
+func (c *Client) fetchJSON(endpoint string, target interface{}) error {
+	fullURL := c.baseURL + endpoint
+
+	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
-		return TypeDetails{}, err
+		return err
 	}
 
 	res, err := c.client.Do(req)
 	if err != nil {
-		return TypeDetails{}, err
+		return err
 	}
-
 	defer res.Body.Close()
 
 	if res.StatusCode > 299 {
-		return TypeDetails{}, fmt.Errorf("bad status code: %d", res.StatusCode)
+		return fmt.Errorf("bad status code: %d", res.StatusCode)
 	}
 
 	data, err := io.ReadAll(res.Body)
 	if err != nil {
-		return TypeDetails{}, err
+		return err
 	}
 
-	details := TypeDetails{}
-
-	err = json.Unmarshal(data, &details)
-	if err != nil {
-		return TypeDetails{}, err
-	}
-
-	return details, nil
+	return json.Unmarshal(data, target)
 }
