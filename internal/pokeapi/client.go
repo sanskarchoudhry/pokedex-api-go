@@ -53,3 +53,35 @@ func (c *Client) ListGenerations() (ResShallowGenerations, error) {
 
 	return generations, nil
 }
+
+func (c *Client) GetGeneration(nameOrID string) (GenerationDetails, error) {
+	url := fmt.Sprintf("%s/generation/%s", c.baseURL, nameOrID)
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return GenerationDetails{}, err
+	}
+
+	res, err := c.client.Do(req)
+	if err != nil {
+		return GenerationDetails{}, err
+	}
+	defer res.Body.Close()
+
+	if res.StatusCode > 299 {
+		return GenerationDetails{}, fmt.Errorf("bad status code: %d", res.StatusCode)
+	}
+
+	data, err := io.ReadAll(res.Body)
+	if err != nil {
+		return GenerationDetails{}, err
+	}
+
+	details := GenerationDetails{}
+	err = json.Unmarshal(data, &details)
+	if err != nil {
+		return GenerationDetails{}, err
+	}
+
+	return details, nil
+}
