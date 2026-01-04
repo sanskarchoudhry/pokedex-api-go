@@ -85,3 +85,69 @@ func (c *Client) GetGeneration(nameOrID string) (GenerationDetails, error) {
 
 	return details, nil
 }
+
+func (c *Client) ListTypes() (ResShallowTypes, error) {
+	fullUrl := c.baseURL + "/type"
+	req, err := http.NewRequest("GET", fullUrl, nil)
+	if err != nil {
+		return ResShallowTypes{}, err
+	}
+
+	res, err := c.client.Do(req)
+	if err != nil {
+		return ResShallowTypes{}, err
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode > 299 {
+		return ResShallowTypes{}, fmt.Errorf("bad status code: %d", res.StatusCode)
+	}
+
+	data, err := io.ReadAll(res.Body)
+	if err != nil {
+		return ResShallowTypes{}, err
+	}
+
+	types := ResShallowTypes{}
+	err = json.Unmarshal(data, &types)
+	if err != nil {
+		return ResShallowTypes{}, err
+	}
+
+	return types, nil
+}
+
+func (c *Client) GetType(name string) (TypeDetails, error) {
+	fullUrl := c.baseURL + "/type/" + name
+
+	req, err := http.NewRequest("GET", fullUrl, nil)
+	if err != nil {
+		return TypeDetails{}, err
+	}
+
+	res, err := c.client.Do(req)
+	if err != nil {
+		return TypeDetails{}, err
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode > 299 {
+		return TypeDetails{}, fmt.Errorf("bad status code: %d", res.StatusCode)
+	}
+
+	data, err := io.ReadAll(res.Body)
+	if err != nil {
+		return TypeDetails{}, err
+	}
+
+	details := TypeDetails{}
+
+	err = json.Unmarshal(data, &details)
+	if err != nil {
+		return TypeDetails{}, err
+	}
+
+	return details, nil
+}

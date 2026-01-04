@@ -1,7 +1,9 @@
 -- name: CreateGeneration :one
 INSERT INTO generations (id, name, region_name)
 VALUES ($1, $2, $3)
-ON CONFLICT (id) DO NOTHING
+ON CONFLICT (id) DO UPDATE
+SET name = EXCLUDED.name, 
+    region_name = EXCLUDED.region_name
 RETURNING *;
 
 -- name: ListGenerations :many

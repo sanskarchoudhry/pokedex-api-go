@@ -15,26 +15,22 @@ import (
 )
 
 func main() {
-	// 1. Load .env file
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	// 2. Get DB URL
 	dbSource := os.Getenv("DB_SOURCE")
 	if dbSource == "" {
 		log.Fatal("DB_SOURCE is not set in .env")
 	}
 
-	// 3. Connect to Database
 	db, err := sql.Open("postgres", dbSource)
 	if err != nil {
 		log.Fatal("Could not open connection to DB:", err)
 	}
-	defer db.Close() // Close connection when main function finishes
+	defer db.Close()
 
-	// 4. Ping to verify connection is alive
 	err = db.Ping()
 	if err != nil {
 		log.Fatal("Could not ping DB:", err)
@@ -72,6 +68,32 @@ func main() {
 			log.Printf("Error saving %s to DB: %v", genDetails.Name, err)
 		} else {
 			fmt.Printf("✅ Saved: %s (Region: %s)\n", savedGen.Name, savedGen.RegionName)
+		}
+	}
+
+	types, err := pokeClient.ListTypes()
+	if err != nil {
+		log.Fatal("Error fetching types", err)
+	}
+
+	for _, t := range types.Results {
+		fmt.Println("Fetching details for type" + t.TypeName)
+
+		typedetails, err := pokeClient.GetType(t.TypeName)
+		if err != nil {
+			log.Printf("Error fetching details for %s: %v", t.TypeName, err)
+			continue
+		}
+
+		savedType, err := queries.CreateType(context.Background(), database.CreateTypeParams{
+			ID:   int32(typedetails.ID),
+			Name: typedetails.Name,
+		})
+
+		if err != nil {
+			log.Printf("Error saving %s to DB: %v", typedetails.Name, err)
+		} else {
+			fmt.Printf("✅ Saved: %s\n", savedType.Name)
 		}
 	}
 }

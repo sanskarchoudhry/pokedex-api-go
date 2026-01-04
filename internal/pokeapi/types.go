@@ -17,3 +17,17 @@ type GenerationDetails struct {
 		Name string `json:"name"`
 	} `json:"main_region"`
 }
+
+type ResShallowTypes struct {
+	Results []TypeItem `json:"results"`
+}
+
+type TypeItem struct {
+	TypeName string `json:"name"`
+	TypeUrl  string `json:"url"`
+}
+
+type TypeDetails struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
