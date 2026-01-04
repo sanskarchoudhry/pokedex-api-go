@@ -1,0 +1,20 @@
+# Secrets
+.env
+
+# Go build binaries
+/bin
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Mac system files
+.DS_Store
+
+# IDE directories
+.idea/
+.vscode/
+
+# Vendor (if you choose to vendor dependencies later)
+vendor/
