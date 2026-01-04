@@ -23,5 +23,5 @@ migratedown:
 
 # --- Application ---
 
-run:
-	go run main.go
+seed:
+	go run cmd/seeder/main.go
